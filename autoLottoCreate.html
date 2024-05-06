@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>로또 추첨기</title>
+    <style>
+meta[name="viewport"] content="width=device-width, initial-scale=1.0"
+
+body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #4CAF50;
+            margin-top: 20px;
+		 text-align : center;
+        }
+
+        .lotto-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+		 font-weight : bold;
+        }
+
+        .ball {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .yellow {
+            background-color: #FFD700; /* 1~10 어두운 노란색 */
+        }
+
+        .light-blue {
+            background-color: #ADD8E6; /* 11~20 연한 파란색 */
+        }
+
+        .light-red {
+            background-color: #FFA07A; /* 21~30 연한 빨간색 */
+        }
+
+        .light-gray {
+            background-color: #D3D3D3; /* 31~40 연한 회색 */
+        }
+
+        .light-green {
+            background-color: #90EE90; /* 41~45 연한 초록색 */
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .most-frequent {
+            display: flex;
+            justify-content: center;
+            flex-direction: row;  /* 가로로 출력 */
+            gap: 10px;
+            flex-wrap: nowrap;  /* 한 줄로 유지 */
+            margin-bottom: 20px;
+        }
+
+        .plus {
+            font-weight: bold;
+            font-size: 24px;
+            color: black;
+        }
+
+        .fixed-buttons {
+            position: fixed;  /* 화면에 고정 */
+            bottom: 80%;     /* 화면 하단에서 80% 위 */
+            left: 50%;        /* 화면 중앙에 정렬 */
+            transform: translateX(-50%);  /* 가운데로 이동 */
+            display: flex;    /* 버튼들을 수평으로 배치 */
+            gap: 10px;        /* 버튼들 사이에 간격 */
+        }
+    </style>
+</head>
+<body>
+    <h1>로또 추첨기</h1>
+    
+    <div class="most-frequent" id="most-frequent-numbers"></div> <!-- 가장 많이 나온 숫자 -->
+    
+    <div class="lotto-container" id="lotto-container"></div> <!-- 로또 추첨 결과 -->
+    
+    <div class="fixed-buttons">
+    <button id="draw-button" name="draw-button" class="draw-button">추첨</button> <!-- 추첨 버튼 -->
+    <button id="reset-button" style="display: none;">다시 추첨</button> <!-- 다시 추첨 버튼 -->
+    <button id="draw-100-button" class="draw-100-button">100회 추첨</button> <!-- 100회 추첨 버튼 -->
+    <button id="clear-button">초기화</button> <!-- 초기화 버튼 -->
+</div>
+
+    
+    <script>
+const totalNumbers = 45;
+const lottoCount = 6;
+let drawnNumbers = [];
+let bonusNumber = null;
+
+
+// 로또 번호 하나씩 추첨하기
+function drawLottoNumber() {
+    let randomNumber;
+    do {
+        randomNumber = Math.floor(Math.random() * totalNumbers) + 1; // 무작위 숫자 생성
+    } while (drawnNumbers.includes(randomNumber)); // 중복 방지
+
+    drawnNumbers.push(randomNumber); // 추첨된 번호 추가
+    return randomNumber;
+}
+
+
+
+
+// 각 숫자에 색상 적용
+function getColorClass(number) {
+    if (number >= 1 && number <= 10) {
+        return "yellow"; // 1~10 어두운 노란색
+    } else if (number >= 11 && number <= 20) {
+        return "light-blue"; // 11~20 연한 파란색
+    } else if (number >= 21 && number <= 30) {
+        return "light-red"; // 21~30 연한 빨간색
+    } else if (number >= 31 && number <= 40) {
+        return "light-gray"; // 31~40 연한 회색
+    } else {
+        return "light-green"; // 41~45 연한 초록색
+    }
+}
+
+// 구 모양으로 숫자 생성
+function createLottoBall(number) {
+    const ball = document.createElement("div");
+    ball.className = `ball ${getColorClass(number)}`; // 색상 클래스 적용
+    ball.innerText = number; // 숫자 표시
+    return ball;
+}
+
+
+// "뽑기" 버튼을 클릭하면 추첨
+function drawNextLotto() {
+    const container = document.getElementById("lotto-container");
+    const drawButton = document.getElementById("draw-button");
+    const resetButton = document.getElementById("reset-button");
+    const draw100Button = document.getElementById("draw-100-button");
+    draw100Button.style.display = "none"; // "100회 추첨" 버튼 숨김
+    const newNumber = drawLottoNumber(); // 새로운 번호 추첨
+    const ball = createLottoBall(newNumber); // 구 모양으로 생성
+    container.appendChild(ball); // 결과에 추가
+
+    if (drawnNumbers.length === lottoCount) {
+        // 6개 번호 추첨 후 보너스 번호 추첨
+        if (!bonusNumber) {
+            const bonusIndicator = document.createElement("div");
+            bonusIndicator.innerText = "+";
+            container.appendChild(bonusIndicator); // "+" 기호 추가
+            
+            let bonus;
+            do {
+                bonus = Math.floor(Math.random() * totalNumbers) + 1;
+            } while (drawnNumbers.includes(bonus)); // 중복 방지
+            bonusNumber = bonus;
+
+            const bonusBall = createLottoBall(bonusNumber);
+            bonusBall.style.border = "2px solid gold"; // 보너스 강조
+            container.appendChild(bonusBall); // 보너스 추가
+
+            drawButton.style.display = "none"; // 뽑기 버튼 숨김
+            resetButton.style.display = "inline-block"; // 다시 추첨 버튼 표시
+        }
+    }
+}
+
+// 100회 자동 추첨
+function drawLotto100() {
+    const numberCounts = Array.from({ length: totalNumbers }, () => 0); // 숫자 출현 횟수
+    const bonusCounts = Array.from({ length: totalNumbers }, () => 0); // 보너스 출현 횟수
+     const drawButton = document.getElementById("draw-button");
+    if (drawButton) {
+        drawButton.style.display = "none"; // "추첨" 버튼 숨기기
+    }
+    for (let i = 0; i < 100; i++) {
+        drawnNumbers = [];
+        for (let j = 0; j < lottoCount; j++) {
+            const number = drawLottoNumber(); // 번호 추첨
+            numberCounts[number - 1]++; // 출현 횟수 증가
+            drawnNumbers.push(number);
+        }
+
+        let bonus;
+        do {
+            bonus = Math.floor(Math.random() * totalNumbers) + 1; // 보너스 추첨
+        } while (drawnNumbers.includes(bonus)); // 중복 방지
+        bonusCounts[bonus - 1]++; // 보너스 출현 횟수 증가
+    }
+
+    const mostFrequentNumbers = numberCounts
+        .map((count, index) => ({ number: index + 1, count }))
+        .sort((a, b) => b.count - a.count); // 출현 횟수로 정렬
+    
+    const frequentLotto = mostFrequentNumbers.slice(0, 6).map(n => n.number).sort((a, b) => a - b); // 가장 많이 나온 6개 숫자
+    const mostFrequentBonus = mostFrequentNumbers[6].number; // 가장 많이 나온 보너스
+
+    const mostFrequentContainer = document.getElementById("most-frequent-numbers");
+    
+    mostFrequentContainer.innerHTML = ""; // 기존 내용 초기화
+
+    // 6개 숫자와 보너스 번호를 구 모양으로 표시
+    frequentLotto.forEach(number => {
+        const ball = createLottoBall(number);
+
+        mostFrequentContainer.appendChild(ball);
+    });
+
+    const bonusBall = createLottoBall(`+${mostFrequentBonus}`); // 보너스 번호에 "+" 기호
+    bonusBall.style.border = "2px solid gold"; // 보너스 강조
+    mostFrequentContainer.appendChild(bonusBall); // 보너스 결과 추가
+}
+
+// 초기화 버튼 클릭 시 모든 상태 초기화
+function clearLotto() {
+    // 로또 추첨 결과를 초기화합니다.
+    drawnNumbers = [];
+    bonusNumber = null;
+
+    // 로또 추첨 결과를 지웁니다.
+    const container = document.getElementById("lotto-container");
+    container.innerHTML = "";
+
+    // 가장 많이 나온 숫자 섹션을 초기화합니다.
+    const mostFrequentContainer = document.getElementById("most-frequent-numbers");
+    mostFrequentContainer.innerHTML = "";
+
+    // 버튼들을 기본 상태로 되돌립니다.
+    const drawButton = document.getElementById("draw-button");
+    drawButton.style.display = "inline-block"; // "추첨" 버튼을 다시 표시합니다.
+
+    const resetButton = document.getElementById("reset-button");
+    resetButton.style.display = "none"; // "다시 추첨" 버튼을 숨깁니다.
+
+    const draw100Button = document.getElementById("draw-100-button");
+    draw100Button.style.display = "inline-block"; // "100회 추첨" 버튼을 다시 표시합니다.
+}
+
+
+
+// 페이지 로드 후 이벤트 리스너 설정
+document.addEventListener("DOMContentLoaded", () => {
+    const drawButton = document.getElementById("draw-button");
+    drawButton.addEventListener("click", drawNextLotto); // 추첨 버튼 클릭
+    
+    const resetButton = document.getElementById("reset-button");
+    resetButton.addEventListener("click", clearLotto); // 다시 추첨
+    
+    const draw100Button = document.getElementById("draw-100-button");
+    draw100Button.addEventListener("click", drawLotto100); // 100회 추첨
+    
+    const clearButton = document.getElementById("clear-button");
+    clearButton.addEventListener("click", clearLotto); // 초기화 버튼
+});
+    </script>
+</body>
+</html>
