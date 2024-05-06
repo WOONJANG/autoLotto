@@ -111,7 +111,7 @@ body {
     <button id="draw-button" name="draw-button" class="draw-button">추첨</button> <!-- 추첨 버튼 -->
     <button id="reset-button" style="display: none;">다시 추첨</button> <!-- 다시 추첨 버튼 -->
     <button id="draw-100-button" class="draw-100-button">100회 추첨</button> <!-- 100회 추첨 버튼 -->
-    <button id="clear-button">초기화</button> <!-- 초기화 버튼 -->
+    <button id="clear-button" style="display:none;">초기화</button> <!-- 초기화 버튼 -->
 </div>
 
     
@@ -120,6 +120,7 @@ const totalNumbers = 45;
 const lottoCount = 6;
 let drawnNumbers = [];
 let bonusNumber = null;
+let clearButton = document.getElementById("clear-button");
 
 
 // 로또 번호 하나씩 추첨하기
@@ -167,6 +168,7 @@ function drawNextLotto() {
     const resetButton = document.getElementById("reset-button");
     const draw100Button = document.getElementById("draw-100-button");
     draw100Button.style.display = "none"; // "100회 추첨" 버튼 숨김
+       clearButton.style.display = "block"; // 초기화 버튼 생성
     const newNumber = drawLottoNumber(); // 새로운 번호 추첨
     const ball = createLottoBall(newNumber); // 구 모양으로 생성
     container.appendChild(ball); // 결과에 추가
@@ -201,7 +203,9 @@ function drawLotto100() {
      const drawButton = document.getElementById("draw-button");
     if (drawButton) {
         drawButton.style.display = "none"; // "추첨" 버튼 숨기기
+	   clearButton.style.display = "block"; // 초기화 버튼 생성
     }
+	
     for (let i = 0; i < 100; i++) {
         drawnNumbers = [];
         for (let j = 0; j < lottoCount; j++) {
@@ -263,6 +267,8 @@ function clearLotto() {
 
     const draw100Button = document.getElementById("draw-100-button");
     draw100Button.style.display = "inline-block"; // "100회 추첨" 버튼을 다시 표시합니다.
+
+    clearButton.style.display = "none"; // 초기화 버튼 생성
 }
 
 
@@ -277,9 +283,17 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const draw100Button = document.getElementById("draw-100-button");
     draw100Button.addEventListener("click", drawLotto100); // 100회 추첨
+    draw100Button.addEventListener("click", () => {
+        drawLotto100();
+        draw100Button.innerText = "다시 100회 추첨";  /* 버튼 텍스트 변경 */
+    });
     
     const clearButton = document.getElementById("clear-button");
     clearButton.addEventListener("click", clearLotto); // 초기화 버튼
+    clearButton.addEventListener("click", ()=>{
+    	
+	draw100Button.innerText = "100회 추첨";  /* 버튼 텍스트 변경 */
+    });
 });
     </script>
 </body>
